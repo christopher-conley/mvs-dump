@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "start": "node dist/index.js",
+    "decoder": "node dist/hydra/decoder.js",
+    "bundle": "tsup src/index.ts --format esm"
+  },
+  "type": "module",
+  "dependencies": {
+    "mockttp-mvs": "^3.7.3",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.2"
+  }
+}

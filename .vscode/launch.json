@@ -1,0 +1,35 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Proxy Debug",
+            "program": "${workspaceFolder}/src/index.ts",
+            //"preLaunchTask": "tsc: build - tsconfig.json",
+            "outFiles": ["${workspaceFolder}/dist/**/*.js"]
+          },
+          {
+            "type": "node",
+            "request": "launch",
+            "name": "Decoder Debug",
+            "args": ["DeclineBuffer.txt${pathSeparator}"],
+            "program": "${workspaceFolder}/src/hydra/decoder.ts",
+            //"preLaunchTask": "tsc: build - tsconfig.json",
+            "outFiles": ["${workspaceFolder}/dist/**/*.js"]
+          },
+          {
+            "name": "Debug npm proxy",
+            "request": "launch",
+            "runtimeArgs": [
+              "run-script",
+              "start"
+            ],
+            "runtimeExecutable": "npm",
+            "skipFiles": [
+              "<node_internals>/**"
+            ],
+            "type": "node"
+          }
+    ]
+  }

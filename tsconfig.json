@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "lib": [
+      "ES2021",
+    ],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "sourceMap": true,
+
+    "skipLibCheck": true,
+    "strictNullChecks": true
+  },
+  "exclude": [
+    "node_modules",
+    "MultiVersus"
+  ]
+}
