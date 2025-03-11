@@ -9,7 +9,7 @@ createCert().then(keys => {
     fs.writeFile("cert.pem", keys.cert, (err) => {
         console.log(err);
     })
-    fs.writeFile("cert1crt", keys.cert, (err) => {
+    fs.writeFile("cert.crt", keys.cert, (err) => {
         console.log(err);
     })
 });

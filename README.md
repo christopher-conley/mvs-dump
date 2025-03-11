@@ -23,9 +23,9 @@ npm install
 ### Generate self-signed cert 
 ```bash
 npm run gen-cert
-
 ```
 ### Bundle application
+Generate cert. Install the cert.crt by double clicking on it and install on the trusted root authority
 ```bash
 npm run bundle
 ```
