@@ -6,6 +6,7 @@
   },
   "type": "module",
   "dependencies": {
+    "create-cert": "^1.0.6",
     "mockttp-mvs": "^3.7.3",
     "tsup": "^8.4.0",
     "typescript": "^5.8.2"
