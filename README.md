@@ -1,10 +1,12 @@
-# MVS Server dumper
+# MVS Server dump
 Starts up a proxy that dumps both http request/response and websocket messages for multiversus
 
 ## Hydra bynary decoder
 Messages are encoded in x-ag-binary HYDRA format
 
 > Decoder based on [HydraDotNet](https://github.com/TheNaeem/HydraDotNet) and [MK12-Api](https://github.com/thethiny/MK12-Api/)
+
+> Uses a fork of mockttp [mockttp-mvs](https://github.com/multiversuskoth/mockttp)
 
 
 ## Requirements
