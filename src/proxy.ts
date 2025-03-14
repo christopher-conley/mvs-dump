@@ -2,7 +2,8 @@ import * as mockttp from 'mockttp-mvs';
 import * as fs from 'fs';
 import * as crypto from 'crypto'
 import { Body, PostmanCollection } from './postman.js';
-import { HydraBatchRequest, HydraBatchResponse, HydraDecoder } from './hydra/decoder.js';
+import { HydraDecoder } from './hydra/decoder.js';
+import { HydraBatchRequest, HydraBatchResponse } from './hydra/hydra.js';
 
 class Proxy {
 
@@ -78,9 +79,12 @@ class Proxy {
                     const id = crypto.randomUUID();
                     const request = requestBodyParse.requests[i];
                     const response = responseBodyParse.responses[i];
+
+                    let fullu = `https://${item.request.url.host.join(".")}${request.url}`;
+                    let url = new URL(fullu);
                     this.httpCollection.item.push({
                         id: id,
-                        name: request.url,
+                        name: url.pathname,
                         request: {
                             header: Object.keys(request.headers).map((key) => { return { key: key, value: request.headers[key] as string } }),
                             method: request.verb,
@@ -97,7 +101,8 @@ class Proxy {
                             url: {
                                 host: item.request.url.host,
                                 protocol: item.request.url.protocol,
-                                path: request.url.split("/").slice(1),
+                                path: url.pathname.split("/").slice(1),
+                                query: url.search ? Array.from(url.searchParams.entries()).map(query => { return { key: query[0], value: query[1] } }) : undefined,
 
                             }
                         },
@@ -163,7 +168,8 @@ class Proxy {
                     url: {
                         host: url.hostname.split('.'),
                         protocol: req.protocol,
-                        path: req.path.split("/").slice(1),
+                        path: url.pathname.split("/").slice(1),
+                        query: url.search ? Array.from(url.searchParams.entries()).map(query => { return { key: query[0], value: query[1] } }) : undefined,
 
                     }
                 },
