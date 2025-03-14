@@ -1,8 +1,10 @@
-type byteType = "int8" | "uint8" | "int16" | "uint16" | "int32" | "uint32" | "int64" | "uint64" | "float" | "double" | "binary"
+import { CODES } from "./hydra.js";
 
 export class HydraBufferReader {
     _buffer: Uint8Array;
     position: number;
+
+    textEncoder = new TextDecoder('ascii');
     constructor(buffer: Buffer) {
         this._buffer = buffer
         this.position = 0;
@@ -12,57 +14,61 @@ export class HydraBufferReader {
         return this.position >= this._buffer.byteLength;
     }
 
-    read(length: number, byteType: byteType) {
+    read(length: number, code: CODES) {
 
         let result: number | ArrayBufferLike = 0;
         try {
             const slice = this._buffer.slice(this.position, this.position + length)
             const buffer = Buffer.from(slice);
-            switch (byteType) {
-                case "int8": {
+
+            switch (code) {
+                case CODES.INT8: {
                     result = buffer.readInt8(0)
                     break;
                 }
-                case "uint8": {
+                case CODES.UINT8: {
                     result = buffer.readUInt8(0);
                     break;
                 }
-                case "int16": {
+                case CODES.INT16: {
                     result = buffer.readInt16BE(0);
                     break;
                 }
-                case "uint16": {
+                case CODES.UINT16: {
                     result = buffer.readUInt16BE(0);
                     break;
                 }
-                case "int32": {
+                case CODES.INT32: {
                     result = buffer.readInt32BE(0);
                     break;
                 }
-                case "uint32": {
+                case CODES.UINT32: {
                     result = buffer.readUInt32BE(0);
                     break;
                 }
-                case "int64": {
+                case CODES.INT64: {
                     result = Number(buffer.readBigInt64BE(0));
                     break;
                 }
-                case "uint64": {
+                case CODES.UINT64: {
                     result = Number(buffer.readBigUInt64BE(0));
                     break;
                 }
-                case "float": {
+                case CODES.FLOAT: {
                     result = buffer.readFloatBE(0);
                     break;
                 }
-                case "double": {
+                case CODES.DOUBLE: {
                     result = buffer.readDoubleBE(0);
                     break;
                 }
-                case "binary": {
-                    result = this._buffer.buffer
-                    break;
-                }
+                case CODES.BYTES8,
+                    CODES.BYTES16,
+                    CODES.BYTES32
+                    : {
+                        result = this._buffer.buffer
+                        break;
+                    }
             }
         } catch (e) {
             console.log(e);
@@ -80,7 +86,7 @@ export class HydraBufferReader {
 
     readString(length) {
         const bytes = this.readToByte(length)
-        const text = new TextDecoder('ascii').decode(bytes); // Assumes ASCII encoding;
+        const text = this.textEncoder.decode(bytes); // Assumes ASCII encoding;
         return text;
     }
 }
