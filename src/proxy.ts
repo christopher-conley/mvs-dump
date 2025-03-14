@@ -221,7 +221,7 @@ class Proxy {
                                 description: buffer.toString("hex"),
                                 url: {
                                     host: [req.ws.upstreamWebSocket.url],
-                                    protocol: "wss",
+                                    protocol: "",
                                     path: [],
 
                                 }
