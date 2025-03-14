@@ -1,3 +1,4 @@
+import { BYTESIZE, CODES } from "./hydra.js";
 import { HydraBufferReader } from "./hydraBufferReader.js";
 import fs from "fs";
 
@@ -58,7 +59,7 @@ export class HydraEncoder {
     encodeDate(value: Date) {
         const time = Math.floor(value.getTime() / 1000);
         const hydraCmd = new HydraCommand();
-        hydraCmd.code = 0x40;
+        hydraCmd.code = CODES.DATE
         hydraCmd.bufferSizeBytes = 4;
 
         const buffer = Buffer.alloc(1 + hydraCmd.bufferSizeBytes);
@@ -72,17 +73,17 @@ export class HydraEncoder {
         const size = data.length;
         const hydraCmd = new HydraCommand();
 
-        if (size < 256) {
-            hydraCmd.code = 0x50;
+        if (size <= BYTESIZE.BYTE8) {
+            hydraCmd.code = CODES.ARRAY8;
             hydraCmd.bufferSizeBytes = 1;
-        } else if (size > 255) {
-            hydraCmd.code = 0x51;
+        } else if (size <= BYTESIZE.BYTE16) {
+            hydraCmd.code = CODES.ARRAY16;
             hydraCmd.bufferSizeBytes = 2;
-        } else if (size > 4294967295) {
-            hydraCmd.code = 0x52;
+        } else if (size <= BYTESIZE.BYTE32) {
+            hydraCmd.code = CODES.ARRAY32;
             hydraCmd.bufferSizeBytes = 4;
-        } else if (size > 18446744073709551615) {
-            hydraCmd.code = 0x33;
+        } else if (size <= BYTESIZE.BYTE64) {
+            hydraCmd.code = CODES.ARRAY64;
             hydraCmd.bufferSizeBytes = 8;
         }
 
@@ -102,17 +103,17 @@ export class HydraEncoder {
         const size = Object.keys(data).length;
         const hydraCmd = new HydraCommand();
 
-        if (size < 256) {
-            hydraCmd.code = 0x60;
+        if (size <= BYTESIZE.BYTE8) {
+            hydraCmd.code = CODES.MAP8;
             hydraCmd.bufferSizeBytes = 1;
-        } else if (size > 255) {
-            hydraCmd.code = 0x61;
+        } else if (size <= BYTESIZE.BYTE16) {
+            hydraCmd.code = CODES.MAP16;
             hydraCmd.bufferSizeBytes = 2;
-        } else if (size > 4294967295) {
-            hydraCmd.code = 0x62;
+        } else if (size <= BYTESIZE.BYTE32) {
+            hydraCmd.code = CODES.MAP32;
             hydraCmd.bufferSizeBytes = 4;
-        } else if (size > 18446744073709551615) {
-            hydraCmd.code = 0x63;
+        } else if (size <= BYTESIZE.BYTE64) {
+            hydraCmd.code = CODES.MAP64;
             hydraCmd.bufferSizeBytes = 8;
         }
         const buffer = Buffer.alloc(1 + hydraCmd.bufferSizeBytes);
@@ -133,14 +134,14 @@ export class HydraEncoder {
         const hydraCmd = new HydraCommand();
         const stringSize = value.length;
 
-        if (stringSize < 256) {
-            hydraCmd.code = 0x30;
+        if (stringSize <= BYTESIZE.BYTE8) {
+            hydraCmd.code = CODES.CHAR8;
             hydraCmd.bufferSizeBytes = 1;
-        } else if (stringSize > 255) {
-            hydraCmd.code = 0x31;
+        } else if (stringSize <= BYTESIZE.BYTE16) {
+            hydraCmd.code = CODES.CHAR16;
             hydraCmd.bufferSizeBytes = 2;
-        } else if (stringSize > 4294967295) {
-            hydraCmd.code = 0x32;
+        } else if (stringSize <= BYTESIZE.BYTE32) {
+            hydraCmd.code = CODES.CHAR32;
             hydraCmd.bufferSizeBytes = 4;
         }
 
@@ -164,22 +165,22 @@ export class HydraEncoder {
         const hydraCmd = new HydraCommand();
 
         if (!Number.isInteger(value)) {
-            hydraCmd.code = 0x21;
+            hydraCmd.code = CODES.DOUBLE;
             hydraCmd.bufferSizeBytes = 8;
         } else if (value < 0) {
-            hydraCmd.code = 0x16;
+            hydraCmd.code = CODES.INT64;
             hydraCmd.bufferSizeBytes = 8;
-        } else if (value <= 255) {
-            hydraCmd.code = 0x11;
+        } else if (value <= BYTESIZE.BYTE8) {
+            hydraCmd.code = CODES.UINT8;
             hydraCmd.bufferSizeBytes = 1;
-        } else if (value <= 65535) {
-            hydraCmd.code = 0x13;
+        } else if (value <= BYTESIZE.BYTE16) {
+            hydraCmd.code = CODES.UINT16;
             hydraCmd.bufferSizeBytes = 2;
-        } else if (value <= 4294967295) {
-            hydraCmd.code = 0x15;
+        } else if (value <= BYTESIZE.BYTE32) {
+            hydraCmd.code = CODES.UINT32;
             hydraCmd.bufferSizeBytes = 4;
-        } else if (value <= 18446744073709551615) {
-            hydraCmd.code = 0x17;
+        } else if (value <= BYTESIZE.BYTE64) {
+            hydraCmd.code = CODES.UINT64
             hydraCmd.bufferSizeBytes = 8;
         }
 

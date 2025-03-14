@@ -93,6 +93,11 @@ export class HydraDecoder {
         return hydraDefAndRen;
     }
 
+    readWebSocket() {
+        const size = this.reader.read(2, CODES.UINT16);
+        return this.readValue();
+    }
+
     readValue() {
         if (this.reader.endOfRead) return null;
         const val = this.reader.read(1, CODES.INT8);
@@ -101,6 +106,7 @@ export class HydraDecoder {
             case CODES.NULL: return null;
             case CODES.TRUE: return true;
             case CODES.FALSE: return false;
+            case CODES.WEBSOCKET: return this.readWebSocket();
             case CODES.INT8: return this.reader.read(1, CODES.INT8);
             case CODES.UINT8: return this.reader.read(1, CODES.UINT8);
             case CODES.INT16: return this.reader.read(2, CODES.INT16);
@@ -147,8 +153,6 @@ if (process.argv[2]) {
             return;
         }
         const t0 = performance.now();
-        // Skip first 3 bytes when reading ws data
-        //const slice = data.slice(3)
         const decoder = new HydraDecoder(data);
         const d = decoder.readValue();
         //console.log(JSON.stringify(d))

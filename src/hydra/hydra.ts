@@ -3,6 +3,7 @@ export enum CODES {
     NULL = 0x1,
     TRUE = 0x2,
     FALSE = 0x3,
+    WEBSOCKET = 0x6,
     INT8 = 0x10,
     UINT8 = 0x11,
     INT16 = 0x12,
@@ -29,6 +30,13 @@ export enum CODES {
     MAP16 = 0x61,
     MAP32 = 0x62,
     MAP64 = 0x63,
+}
+
+export enum BYTESIZE {
+    BYTE8 = 255,
+    BYTE16 = 65535,
+    BYTE32 = 4294967295,
+    BYTE64 = 18446744073709551615,
 }
 
 export interface Localization {
