@@ -124,7 +124,7 @@ export class HydraDecoder {
             case CODES.BYTES16: return this.reader.read(this.reader.read(2, CODES.UINT16) as number, CODES.BYTES16);
             case CODES.BYTES32: return this.reader.read(this.reader.read(4, CODES.UINT32) as number, CODES.BYTES32);
             case CODES.BIGINT: return this.reader.read(8, CODES.UINT64);
-            case CODES.DATE: return new Date(this.reader.read(4, CODES.UINT32) as number * 1000);
+            case CODES.DATE: return this.reader.read(4, CODES.UINT32) as number;
             case CODES.ARRAY8: return this.readArray(this.reader.read(1, CODES.UINT8));
             case CODES.ARRAY16: return this.readArray(this.reader.read(2, CODES.UINT16));
             case CODES.ARRAY32: return this.readArray(this.reader.read(4, CODES.UINT32));

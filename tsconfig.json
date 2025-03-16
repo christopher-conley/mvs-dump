@@ -8,13 +8,14 @@
     "moduleResolution": "NodeNext",
     "target": "ES2022",
     "outDir": "./dist",
+    "declaration": true,
     "rootDir": "./src",
     "sourceMap": true,
-
     "skipLibCheck": true,
     "strictNullChecks": true
   },
   "exclude": [
+    "dist",
     "node_modules",
     "MultiVersus"
   ]

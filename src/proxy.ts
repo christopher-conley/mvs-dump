@@ -291,4 +291,5 @@ class Proxy {
 }
 
 const proxy = new Proxy();
+await proxy.init();
 export default proxy;

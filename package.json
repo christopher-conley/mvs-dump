@@ -1,17 +1,30 @@
 {
   "name": "mvs-dump",
+  "version": "1.0.0",
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "node dist/proxy.js",
     "decoder": "node dist/hydra/decoder.js",
-    "bundle": "tsup src/index.ts --format esm",
+    "bundle": "tsup src/proxy.ts --format esm",
+    "build": "tsc",
     "gen-cert": "node src/create-cert.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/multiversuskoth/mvs-dump.git"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "src",
+    "dist",
+    "package.json",
+    "README.md"
+  ],
   "type": "module",
   "dependencies": {
+    "@swc-node/register": "^1.10.10",
     "create-cert": "^1.0.6",
     "mockttp-mvs": "^3.7.3",
     "tsup": "^8.4.0",
     "typescript": "^5.8.2"
-  },
-  "packageManager": "pnpm@10.6.2+sha512.47870716bea1572b53df34ad8647b42962bc790ce2bf4562ba0f643237d7302a3d6a8ecef9e4bdfc01d23af1969aa90485d4cebb0b9638fa5ef1daef656f6c1b"
+  }
 }
