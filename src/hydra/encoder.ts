@@ -1,6 +1,7 @@
 import { BYTESIZE, CODES } from "./hydra.js";
 import { HydraBufferReader } from "./hydraBufferReader.js";
 import fs from "fs";
+import zlib, { constants } from "zlib"
 
 export class HydraCommand {
     code: number;
@@ -24,8 +25,6 @@ export class HydraEncoder {
         }
         if (typeof data === "boolean") {
             return this.encodeBoolean(data);
-        } else if (data instanceof Date) {
-            return this.encodeDate(data);
         }
         if (typeof data === "object") {
             if (Array.isArray(data)) {
@@ -56,8 +55,7 @@ export class HydraEncoder {
         this.pushBuffer(buffer);
     }
 
-    encodeDate(value: Date) {
-        const time = Math.floor(value.getTime() / 1000);
+    encodeDate(time: any) {
         const hydraCmd = new HydraCommand();
         hydraCmd.code = CODES.DATE
         hydraCmd.bufferSizeBytes = 4;
@@ -67,6 +65,59 @@ export class HydraEncoder {
         hydraCmd.offset++;
         this.writeInt(buffer, time, hydraCmd.bufferSizeBytes, hydraCmd.offset);
         this.pushBuffer(buffer);
+    }
+
+    encodeCompressed(data: any) {
+        const hydraCmd = new HydraCommand();
+        const newEncoder = new HydraEncoder();
+        newEncoder.encodeValue(data);
+        const compressedBuffer = zlib.deflateSync(newEncoder.returnValue(), {
+            level: constants.Z_BEST_SPEED,
+
+        });
+
+        hydraCmd.code = CODES.COMPRESSED
+
+        const size = compressedBuffer.byteLength;
+
+        if (size <= BYTESIZE.BYTE8) {
+            hydraCmd.bufferSizeBytes = 1;
+        } else if (size <= BYTESIZE.BYTE16) {
+            hydraCmd.bufferSizeBytes = 2;
+        } else if (size <= BYTESIZE.BYTE32) {
+            hydraCmd.bufferSizeBytes = 4;
+        } else if (size <= BYTESIZE.BYTE64) {
+            hydraCmd.bufferSizeBytes = 8;
+        }
+
+
+        const buffer = Buffer.alloc(3 + hydraCmd.bufferSizeBytes);
+
+        // Header
+        this.writeInt(buffer, hydraCmd.code, 1, hydraCmd.offset);
+        hydraCmd.offset++;
+
+        // Index
+        this.writeInt(buffer, 1, 1, hydraCmd.offset);
+        hydraCmd.offset++;
+
+        // BYTES TYPE
+        if (size <= BYTESIZE.BYTE8) {
+            this.writeInt(buffer, CODES.BYTES8, 1, hydraCmd.offset);
+            hydraCmd.offset++;
+            this.writeInt(buffer, size, 1, hydraCmd.offset);
+        } else if (size <= BYTESIZE.BYTE16) {
+            this.writeInt(buffer, CODES.BYTES16, 1, hydraCmd.offset);
+            hydraCmd.offset++;
+            this.writeInt(buffer, size, 2, hydraCmd.offset);
+        } else if (size <= BYTESIZE.BYTE32) {
+            this.writeInt(buffer, CODES.BYTES32, 1, hydraCmd.offset);
+            hydraCmd.offset++;
+            this.writeInt(buffer, size, 4, hydraCmd.offset);
+        }
+
+        this.pushBuffer(buffer);
+        this.pushBuffer(compressedBuffer);
     }
 
     encodeArray(data: Object[]) {
@@ -125,14 +176,74 @@ export class HydraEncoder {
         this.pushBuffer(buffer);
 
         for (const [key, value] of Object.entries(data)) {
-            this.encodeString(key);
-            this.encodeValue(value);
+
+            if (key === "file_reference") {
+                this.encodeString(key);
+                this.encodeFileReference(value.value)
+            } else if (key === "localizations") {
+                let removedBuffer = this.chunks.pop();
+                this.totalLength -= removedBuffer!.length;
+                this.encodeLocalizations(value)
+            } else if (key === "_hydra_StoreEnabed") {
+                let removedBuffer = this.chunks.pop();
+                this.totalLength -= removedBuffer!.length;
+                this.encodeStoreEnabled(value)
+            } else if (key === "_hydra_unix_date") {
+                let removedBuffer = this.chunks.pop();
+                this.totalLength -= removedBuffer!.length;
+                this.encodeDate(value)
+            } else if (key === "_hydra_compressed") {
+                let removedBuffer = this.chunks.pop();
+                this.totalLength -= removedBuffer!.length;
+                this.encodeCompressed(value)
+
+            } else if (key === "_hydra_double") {
+                let removedBuffer = this.chunks.pop();
+                this.totalLength -= removedBuffer!.length;
+                this.encodeDouble(value)
+            } else if (key === "_hydra_calendar") {
+                let removedBuffer = this.chunks.pop();
+                this.totalLength -= removedBuffer!.length;
+                this.encodeCalendar(value)
+            } else {
+                this.encodeString(key);
+                this.encodeValue(value);
+            }
         }
+    }
+
+    encodeCalendar(data: Record<string, any>) {
+        const buffer = Buffer.from([0x69]);
+        this.pushBuffer(buffer);
+        this.encodeValue(data.default)
+        this.encodeValue(data.rendered)
+    }
+
+    encodeLocalizations(data: Record<string, any>) {
+        const buffer = Buffer.from([0x68, 0x1, 0x1]);
+        this.pushBuffer(buffer);
+        let key = Object.keys(data)[0];
+        this.encodeString(key)
+        this.encodeString(data[key])
+    }
+
+    encodeFileReference(data: Record<string, any>) {
+        const buffer = Buffer.from([0x70]);
+        this.pushBuffer(buffer);
+        this.encodeString("hydra_file")
+        this.encodeString(data.id)
+        this.encodeObject(data);
+    }
+
+    encodeStoreEnabled(data) {
+        const buffer = Buffer.from([0x71, 0x3, 0x3]);
+        this.pushBuffer(buffer);
+        this.encodeArray(data);
     }
 
     encodeString(value: string) {
         const hydraCmd = new HydraCommand();
-        const stringSize = value.length;
+        const stringSize = Buffer.byteLength(value, 'utf8');
 
         if (stringSize <= BYTESIZE.BYTE8) {
             hydraCmd.code = CODES.CHAR8;
@@ -159,6 +270,20 @@ export class HydraEncoder {
         buffer.write(value, hydraCmd.offset);
         this.pushBuffer(buffer);
         return value;
+    }
+
+    encodeDouble(value: number) {
+        const hydraCmd = new HydraCommand();
+        hydraCmd.code = CODES.DOUBLE;
+        hydraCmd.bufferSizeBytes = 8;
+
+
+        const buffer = Buffer.alloc(1 + hydraCmd.bufferSizeBytes);
+        buffer.writeUint8(hydraCmd.code);
+        hydraCmd.offset++;
+        buffer.writeDoubleBE(value, hydraCmd.offset);
+
+        this.pushBuffer(buffer);
     }
 
     encodeNumber(value: number) {
@@ -247,6 +372,6 @@ if (process.argv[2]) {
         const t1 = performance.now();
         console.log(`Execution time: ${t1 - t0} ms`);
         fs.writeFileSync(`${process.argv[2]}.bin`, buffer)
-        console.log(buffer?.toString("hex"));
+        //console.log(buffer?.toString("hex"));
     });
 }

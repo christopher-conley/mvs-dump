@@ -30,6 +30,7 @@ export enum CODES {
     MAP16 = 0x61,
     MAP32 = 0x62,
     MAP64 = 0x63,
+    COMPRESSED = 0x67,
 }
 
 export enum BYTESIZE {
@@ -43,18 +44,14 @@ export interface Localization {
     localizations: Record<string, string>
 };
 
-export interface HydraDefaultAndRendered {
-    default: boolean,
-    rendered: boolean | null,
+export interface HydraCustomType {
+    [key:string]: any;
+
 };
 
 export interface HydraFileRef {
     "_customType": "hydra_reference",
     value: Record<string, string>,
-};
-
-export interface HydraEnabled extends HydraDefaultAndRendered {
-    "values": any[]
 };
 
 export interface HydraBatchRequest {
